@@ -1,47 +1,69 @@
-describe('ReqResAPItesting', () => {
-    Cypress.config('baseUrl', 'https://reqres.in/')
+describe("ReqResAPItesting", () => {
+  Cypress.config("baseUrl", "https://reqres.in/");
 
-    it('GET - read', () => {
-        cy.request('/api/users/2').then((response) => {
-            expect(response).to.have.property('status',200)
-            expect(response).to.have.property('statusText','OK')
-            expect(response.body).to.not.be.null
-            expect(response.duration).to.not.be.null
-           // expect(response).to.have.property('duration',47)
-        })
-    })
-    
-    it('POST - create', () => {
-        const details = {
-            "name": "Anusha",
-            "job": "Software"
-        }
-        cy.request('POST', '/api/users', details )//.its('status').should('eq', 201)
-        .its('body')
-        .should('include', {name:'Anusha'})
-    })
-   
-   it('PUT - update', () => {
+  beforeEach(() => {
+    cy.request("/api/users/2").as("anu");
+  });
+
+  it("Validate the header", () => {
+    cy.get("@anu")
+      .its("headers")
+      .its("content-type")
+      .should("include", "application/json; charset=utf-8");
+  });
+
+  it("Validate the status code", () => {
+    cy.get("@anu").its("status").should("equal", 200);
+  });
+
+  it("should return the number of users", () => {
+    cy.request("api/users?page=2").then((response) => {
+      expect(response.body).to.not.be.null;
+      expect(response.body.data).to.have.lengthOf(6);
+    });
+  });
+
+  it("GET - read", () => {
+    cy.request("/api/users/2").then((response) => {
+      expect(response).to.have.property("status", 200);
+      expect(response).to.have.property("statusText", "OK");
+      expect(response.body).to.not.be.null;
+      expect(response.body.data).to.not.be.null;
+      expect(response.duration).to.not.be.null;
+    });
+  });
+
+  it("POST - create", () => {
     const details = {
-        "name": "Venkata"
-    }
-    cy.request('PUT', '/api/users/2', details )
-   })
+      name: "Anusha",
+      job: "Software",
+    };
+    cy.request("POST", "/api/users", details)
+      .its("body")
+      .should("include", { name: "Anusha" });
+  });
 
-   it('PATCH - update', () => {
+  it("PUT - update", () => {
     const details = {
-        "job": "Test Engineer"
-    }
-    cy.request('PATCH', '/api/users/2', details )
-   })
+      name: "Venkata",
+    };
+    cy.request("PUT", "/api/users/2", details);
+  });
 
-
-   it('DELETE - remove', () => {
+  it("PATCH - update", () => {
     const details = {
-        "name": "Anusha",
-            "job": "Software"
-    }
-    cy.request('DELETE', '/api/users/2', details ).its('status').should('eq', 204)
-   })
+      job: "Test Engineer",
+    };
+    cy.request("PATCH", "/api/users/2", details);
+  });
 
-})
+  it("DELETE - remove", () => {
+    const details = {
+      name: "Anusha",
+      job: "Software",
+    };
+    cy.request("DELETE", "/api/users/2", details)
+      .its("status")
+      .should("eq", 204);
+  });
+});
